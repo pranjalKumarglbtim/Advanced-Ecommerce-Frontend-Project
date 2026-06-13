@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ShopWave — Advanced E-commerce</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .skeleton { background: linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%); background-size:200% 100%; animation: sk 1.2s infinite; }
+  @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .toast-in { animation: ti .3s ease-out; }
+  @keyframes ti { from{opacity:0; transform:translateX(20px)} to{opacity:1; transform:translateX(0)} }
+  .drawer-in { animation: di .35s cubic-bezier(.2,.8,.2,1); }
+  @keyframes di { from{transform:translateX(100%)} to{transform:translateX(0)} }
+  input[type=range]{accent-color:#6366f1}
+
+  /* Animated gradient hero */
+  .hero-bg{
+    background: linear-gradient(120deg,#4f46e5,#7c3aed,#db2777,#f59e0b,#4f46e5);
+    background-size: 300% 300%;
+    animation: heroShift 12s ease infinite;
+  }
+  @keyframes heroShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+  /* Floating blobs */
+  .blob{position:absolute;border-radius:9999px;filter:blur(60px);opacity:.5;mix-blend-mode:screen;animation:float 10s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.15)}}
+
+  /* Fade up */
+  .fade-up{opacity:0;transform:translateY(24px);animation:fu .7s .1s forwards cubic-bezier(.2,.8,.2,1)}
+  .fade-up.d2{animation-delay:.25s}
+  .fade-up.d3{animation-delay:.4s}
+  @keyframes fu{to{opacity:1;transform:translateY(0)}}
+
+  /* Card hover lift */
+  .card-lift{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+  .card-lift:hover{transform:translateY(-8px);box-shadow:0 25px 50px -12px rgba(79,70,229,.25)}
+
+  /* Shine on buttons */
+  .shine{position:relative;overflow:hidden}
+  .shine::after{content:"";position:absolute;top:0;left:-150%;width:60%;height:100%;background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg);transition:left .7s}
+  .shine:hover::after{left:150%}
+
+  /* Marquee */
+  .marquee{display:flex;gap:3rem;animation:marq 25s linear infinite;white-space:nowrap}
+  @keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* Pulse glow */
+  .glow{box-shadow:0 0 0 0 rgba(99,102,241,.6);animation:glow 2s infinite}
+  @keyframes glow{0%{box-shadow:0 0 0 0 rgba(99,102,241,.6)}70%{box-shadow:0 0 0 18px rgba(99,102,241,0)}100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}}
+
+  /* Image tilt */
+  .tilt{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+  .tilt:hover{transform:perspective(1000px) rotateY(-6deg) rotateX(4deg) scale(1.03)}
+
+  /* Parallax */
+  .parallax{transform-style:preserve-3d;transition:transform .5s}
+  .parallax-1{transform:translateZ(20px) scale(1.05)}
+  .parallax-2{transform:translateZ(10px) scale(1.02)}
+
+  /* 3D Flip */
+  .flip-card{transform-style:preserve-3d;transition:transform .7s}
+  .flip-card:hover{transform:rotateY(180deg)}
+  .flip-inner{backface-visibility:hidden}
+  .flip-back{backface-visibility:hidden;transform:rotateY(180deg);position:absolute;top:0;left:0;width:100%;height:100%;}
+
+  /* Animated counters */
+  .count-up{animation:count 2s ease-out}
+  @keyframes count{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+  /* Glass morphism */
+  .glass{background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.2)}
+
+  /* Dark mode */
+  .dark .hero-bg{background:linear-gradient(120deg,#1e293b,#334155,#475569,#64748b,#1e293b)}
+  .dark .card-lift{background:#1e293b}
+  .dark .bg-white{background:#0f172a}
+  .dark .text-gray-900{color:#e2e8f0}
+  .dark .text-gray-600{color:#94a3b8}
+  .dark .bg-gray-50{background:#0f172a}
+  .dark .border-gray-100{border-color:#1e293b}
+  .dark .bg-gray-900{background:#020617}
+
+  /* Floating animation */
+  .floating{animation:float 6s ease-in-out infinite}
+
+  /* Scroll progress */
+  #scrollProgress{position:fixed;top:0;left:0;width:0;height:3px;background:#6366f1;z-index:100;transition:width .1s}
+
+  /* Pulse badge */
+  .pulse-badge{animation:pulse 2s infinite}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+  /* Color shift animation */
+  .color-shift{
+    background:linear-gradient(270deg,#6366f1,#8b5cf6,#ec4899,#f59e0b,#6366f1);
+    background-size:200% 200%;
+    animation:shift 8s ease infinite;
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  @keyframes shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+  /* Glow pulse */
+  .glow-pulse{
+    box-shadow:0 0 20px rgba(99,102,241,.5);
+    animation:glow-pulse 2s ease-in-out infinite alternate;
+  }
+  @keyframes glow-pulse{from{box-shadow:0 0 10px rgba(99,102,241,.3)}to{box-shadow:0 0 30px rgba(99,102,241,.7)}}
+
+  /* Shimmer effect */
+  .shimmer{
+    background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.4) 50%,rgba(255,255,255,0) 100%);
+    background-size:200% 100%;
+    animation:shimmer 3s infinite;
+  }
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  /* Gradient border */
+  .gradient-border{
+    border:2px solid;
+    border-image:linear-gradient(45deg,#6366f1,#8b5cf6,#ec4899) 1;
+    animation:gradient-border 4s ease infinite;
+  }
+  @keyframes gradient-border{0%{border-image:linear-gradient(45deg,#6366f1,#8b5cf6,#ec4899) 1}50%{border-image:linear-gradient(45deg,#ec4899,#f59e0b,#6366f1) 1}100%{border-image:linear-gradient(45deg,#6366f1,#8b5cf6,#ec4899) 1}}
+
+  /* Hover grow */
+  .hover-grow{transition:transform .3s}
+  .hover-grow:hover{transform:scale(1.05)}
+
+  /* Star sparkle */
+  .star-sparkle{filter:drop-shadow(0 0 2px rgba(255,200,0,.8));}
+  .star-sparkle:hover{filter:drop-shadow(0 0 8px rgba(255,200,0,1));}
+
+  /* Price badge */
+  .price-badge{
+    background:linear-gradient(135deg,#10b981,#059669);
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900">
+<div id="scrollProgress"></div>
+<div id="root"></div>
+<script>
+  window.addEventListener('scroll', () => {
+    const progress = document.getElementById('scrollProgress');
+    const percent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    if(progress) progress.style.width = percent + '%';
+  });
+</script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useReducer, useContext, createContext, useMemo, useRef, useCallback } = React;
+
+/* ---------------- DATA ---------------- */
+const CATEGORIES = ["Electronics","Clothing","Home & Kitchen","Sports","Books"];
+const PRODUCTS = [
+  {id:1, name:"Wireless Noise-Cancelling Headphones", category:"Electronics", price:199.99, originalPrice:279.99, rating:4.6, reviewCount:248, image:"/img1.jpeg", description:"Immersive sound with industry-leading noise cancellation and 30-hour battery life.", tags:["audio","bluetooth","premium"], stock:14, isFeatured:true},
+  {id:2, name:"Smart Fitness Watch", category:"Electronics", price:149.0, originalPrice:199.0, rating:4.4, reviewCount:512, image:"/img2.jpeg", description:"Track workouts, heart rate, sleep, and notifications on a vibrant AMOLED display.", tags:["wearable","fitness"], stock:22, isFeatured:true},
+  {id:3, name:"Classic Cotton T-Shirt", category:"Clothing", price:19.99, originalPrice:29.99, rating:4.2, reviewCount:88, image:"/img4.jpeg", description:"Soft 100% organic cotton tee with a relaxed everyday fit.", tags:["cotton","casual"], stock:120, isFeatured:false},
+  {id:4, name:"Slim Fit Denim Jeans", category:"Clothing", price:59.5, originalPrice:79.99, rating:4.1, reviewCount:142, image:"/img3.jpeg", description:"Stretch denim jeans with a modern slim cut and reinforced stitching.", tags:["denim","slim"], stock:0, isFeatured:false},
+  {id:5, name:"Non-Stick Cookware Set (10 pcs)", category:"Home & Kitchen", price:129.99, originalPrice:179.99, rating:4.7, reviewCount:301, image:"/img5.jpeg", description:"Durable ceramic non-stick coating, induction-ready, dishwasher safe.", tags:["kitchen","cookware"], stock:8, isFeatured:true},
+  {id:6, name:"Stand Mixer 5QT", category:"Home & Kitchen", price:249.0, originalPrice:329.0, rating:4.8, reviewCount:430, image:"/img6.jpeg", description:"Powerful 500W motor with 10 speeds and multiple attachments.", tags:["baking","appliance"], stock:5, isFeatured:false},
+  {id:7, name:"Yoga Mat Pro", category:"Sports", price:39.99, originalPrice:54.99, rating:4.5, reviewCount:189, image:"/img7.jpeg", description:"Eco-friendly TPE yoga mat with superior grip and cushioning.", tags:["yoga","fitness"], stock:60, isFeatured:true},
+  {id:8, name:"Adjustable Dumbbell Set", category:"Sports", price:299.0, originalPrice:399.0, rating:4.7, reviewCount:97, image:"/img8.jpeg", description:"Space-saving adjustable dumbbells, 5-52.5 lbs per hand.", tags:["strength","home gym"], stock:3, isFeatured:false},
+  {id:9, name:"The Pragmatic Programmer", category:"Books", price:34.99, originalPrice:44.99, rating:4.9, reviewCount:1024, image:"/img9.jpeg", description:"A classic guide to becoming a better software developer.", tags:["programming","career"], stock:45, isFeatured:false},
+  {id:10, name:"Atomic Habits", category:"Books", price:16.99, originalPrice:24.99, rating:4.8, reviewCount:2110, image:"/img10.jpeg", description:"Tiny changes, remarkable results — build good habits and break bad ones.", tags:["self-help","bestseller"], stock:0, isFeatured:false},
+  {id:11, name:"4K Ultra HD Action Camera", category:"Electronics", price:179.0, originalPrice:229.0, rating:4.3, reviewCount:201, image:"/img13.jpeg", description:"Waterproof to 30m, 4K60 video, image stabilization.", tags:["camera","outdoor"], stock:18, isFeatured:false},
+  {id:12, name:"Hooded Sweatshirt", category:"Clothing", price:44.99, originalPrice:59.99, rating:4.0, reviewCount:67, image:"/img11.jpeg", description:"Cozy fleece-lined hoodie perfect for chilly days.", tags:["hoodie","casual"], stock:32, isFeatured:false},
+  {id:13, name:"Espresso Machine Deluxe", category:"Home & Kitchen", price:399.0, originalPrice:499.0, rating:4.6, reviewCount:158, image:"/img12.jpeg", description:"15-bar pump espresso machine with built-in milk frother.", tags:["coffee","appliance"], stock:7, isFeatured:true},
+  {id:14, name:"Mountain Bike 27.5\"", category:"Sports", price:649.0, originalPrice:799.0, rating:4.5, reviewCount:74, image:"/img1.jpeg", description:"21-speed hardtail mountain bike with hydraulic disc brakes.", tags:["bike","outdoor"], stock:4, isFeatured:false},
+];
+
+const FAKE_REVIEWS = [
+  {name:"Alex Johnson", date:"2025-03-12", rating:5, comment:"Absolutely love it. Exceeded my expectations in every way."},
+  {name:"Priya Patel", date:"2025-02-28", rating:4, comment:"Great quality for the price. Shipping was fast."},
+  {name:"Marco Rossi", date:"2025-01-15", rating:5, comment:"Bought one for my partner too — that's how good it is."},
+];
+
+/* ---------------- UTILS ---------------- */
+const fmt = n => `$${n.toFixed(2)}`;
+const Stars = ({value, size="text-sm"}) => {
+  const full = Math.floor(value);
+  const half = value - full >= 0.5;
+  const stars = [];
+  for(let i=0;i<5;i++){
+    if(i<full) stars.push("★");
+    else if(i===full && half) stars.push("⯨");
+    else stars.push("☆");
+  }
+  return <span className={`text-amber-500 ${size}`}>{stars.join("")}</span>;
+};
+
+/* ---------------- TOAST ---------------- */
+const ToastCtx = createContext(null);
+function ToastProvider({children}){
+  const [toasts,setToasts] = useState([]);
+  const push = useCallback((msg, type="success")=>{
+    const id = Date.now()+Math.random();
+    setToasts(t=>[...t,{id,msg,type}]);
+    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)), 3000);
+  },[]);
+  return <ToastCtx.Provider value={push}>
+    {children}
+    <div className="fixed top-4 right-4 z-[100] space-y-2">
+      {toasts.map(t=>(
+        <div key={t.id} className={`toast-in min-w-[240px] max-w-sm px-4 py-3 rounded-lg shadow-lg text-white text-sm ${t.type==='error'?'bg-red-600':t.type==='info'?'bg-indigo-600':'bg-emerald-600'}`}>
+          {t.msg}
+        </div>
+      ))}
+    </div>
+  </ToastCtx.Provider>;
+}
+const useToast = ()=>useContext(ToastCtx);
+
+/* ---------------- APP STATE ---------------- */
+const AppCtx = createContext(null);
+
+const initialState = {
+  cart: JSON.parse(localStorage.getItem("cart")||"[]"),
+  user: JSON.parse(localStorage.getItem("user")||"null"),
+  wishlist: JSON.parse(localStorage.getItem("wishlist")||"[]"),
+};
+
+function reducer(state, action){
+  switch(action.type){
+    case "ADD_CART": {
+      const ex = state.cart.find(c=>c.id===action.product.id);
+      const cart = ex
+        ? state.cart.map(c=>c.id===action.product.id?{...c, qty: Math.min(c.qty+action.qty, action.product.stock)}:c)
+        : [...state.cart, {id:action.product.id, qty:action.qty}];
+      return {...state, cart};
+    }
+    case "REMOVE_CART":
+      return {...state, cart: state.cart.filter(c=>c.id!==action.id)};
+    case "UPDATE_QTY":
+      return {...state, cart: state.cart.map(c=>c.id===action.id?{...c, qty:action.qty}:c)};
+    case "CLEAR_CART": return {...state, cart:[]};
+    case "LOGIN": return {...state, user: action.user};
+    case "LOGOUT": return {...state, user:null};
+    case "TOGGLE_WISH": {
+      const has = state.wishlist.includes(action.id);
+      return {...state, wishlist: has? state.wishlist.filter(i=>i!==action.id) : [...state.wishlist, action.id]};
+    }
+    default: return state;
+  }
+}
+
+function AppProvider({children}){
+  const [state, dispatch] = useReducer(reducer, initialState);
+  useEffect(()=>localStorage.setItem("cart", JSON.stringify(state.cart)), [state.cart]);
+  useEffect(()=>localStorage.setItem("user", JSON.stringify(state.user)), [state.user]);
+  useEffect(()=>localStorage.setItem("wishlist", JSON.stringify(state.wishlist)), [state.wishlist]);
+  return <AppCtx.Provider value={{state, dispatch}}>{children}</AppCtx.Provider>;
+}
+const useApp = ()=>useContext(AppCtx);
+
+/* ---------------- ROUTER ---------------- */
+const RouterCtx = createContext(null);
+function RouterProvider({children}){
+  const [route, setRoute] = useState({name:"home", params:{}});
+  const navigate = useCallback((name, params={})=>{
+    setRoute({name, params});
+    window.scrollTo({top:0, behavior:"smooth"});
+  },[]);
+  return <RouterCtx.Provider value={{route, navigate}}>{children}</RouterCtx.Provider>;
+}
+const useRouter = ()=>useContext(RouterCtx);
+
+/* ---------------- HEADER ---------------- */
+function Header({onOpenWishlist}){
+  const {state, dispatch} = useApp();
+  const {navigate, route} = useRouter();
+  const toast = useToast();
+  const [scrolled,setScrolled] = useState(false);
+  const [mobile,setMobile] = useState(false);
+  const [q,setQ] = useState("");
+  const [openSug,setOpenSug] = useState(false);
+  const [darkMode,setDarkMode] = useState(false);
+  useEffect(()=>{
+    const onScroll = ()=>setScrolled(window.scrollY>10);
+    window.addEventListener("scroll",onScroll);
+    return ()=>window.removeEventListener("scroll",onScroll);
+  },[]);
+  useEffect(()=>{
+    if(darkMode) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+  },[darkMode]);
+  const cartCount = state.cart.reduce((s,c)=>s+c.qty,0);
+  const suggestions = q.trim()? PRODUCTS.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())).slice(0,5):[];
+
+  const navLinks = [
+    {label:"Home", to:"home"},
+    {label:"Products", to:"products"},
+    {label:"Cart", to:"cart"},
+  ];
+
+  return (
+    <header className={`sticky top-0 z-50 bg-white transition-shadow ${scrolled?'shadow-md':'shadow-sm'}`}>
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+        <button className="md:hidden text-2xl" onClick={()=>setMobile(m=>!m)}>☰</button>
+        <button onClick={()=>navigate("home")} className="text-2xl font-extrabold text-indigo-600 tracking-tight">Shop<span className="text-gray-900">Wave</span></button>
+        <nav className="hidden md:flex gap-6 ml-6">
+          {navLinks.map(l=>(
+            <button key={l.to} onClick={()=>navigate(l.to)} className={`text-sm font-medium hover:text-indigo-600 ${route.name===l.to?'text-indigo-600':'text-gray-700'}`}>{l.label}</button>
+          ))}
+        </nav>
+        <div className="flex-1 relative max-w-md mx-auto hidden sm:block">
+          <input
+            value={q}
+            onChange={e=>{setQ(e.target.value); setOpenSug(true);}}
+            onFocus={()=>setOpenSug(true)}
+            onBlur={()=>setTimeout(()=>setOpenSug(false),150)}
+            onKeyDown={e=>{if(e.key==='Enter'){navigate("products",{search:q}); setOpenSug(false);}}}
+            placeholder="Search products..."
+            className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          {openSug && suggestions.length>0 && (
+            <div className="absolute top-full mt-1 w-full bg-white shadow-lg rounded-lg border overflow-hidden z-50">
+              {suggestions.map(s=>(
+                <button key={s.id} onMouseDown={()=>{navigate("product",{id:s.id}); setQ(""); setOpenSug(false);}} className="flex items-center gap-3 w-full px-3 py-2 hover:bg-gray-50 text-left">
+                  <img src={s.image} className="w-10 h-10 rounded object-cover" />
+                  <div>
+                    <div className="text-sm font-medium">{s.name}</div>
+                    <div className="text-xs text-gray-500">{fmt(s.price)}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <button onClick={()=>setDarkMode(d=>!d)} className="relative p-2 hover:bg-gray-100 rounded-full transition" title="Dark Mode">
+            {darkMode ? '🌙' : '☀️'}
+          </button>
+          <button onClick={onOpenWishlist} className="relative p-2 hover:bg-pink-50 rounded-full transition" title="Wishlist">
+            <span className="text-xl">♥</span>
+            {state.wishlist.length>0 && <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center pulse-badge">{state.wishlist.length}</span>}
+          </button>
+          <button onClick={()=>navigate("cart")} className="relative p-2 hover:bg-indigo-50 rounded-full transition" title="Cart">
+            <span className="text-xl">🛒</span>
+            {cartCount>0 && <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center pulse-badge">{cartCount}</span>}
+          </button>
+          {state.user ? (
+            <div className="hidden sm:flex items-center gap-2 ml-2">
+              <span className="text-sm text-gray-700">Hi, {state.user.name.split(" ")[0]}</span>
+              <button onClick={()=>{dispatch({type:"LOGOUT"}); toast("Logged out","info");}} className="text-sm text-indigo-600 hover:underline">Logout</button>
+            </div>
+          ) : (
+            <button onClick={()=>navigate("auth")} className="ml-2 text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-full hover:shadow-lg transition">Sign In</button>
+          )}
+        </div>
+      </div>
+      {mobile && (
+        <div className="md:hidden border-t bg-white px-4 py-3 space-y-2">
+          {navLinks.map(l=>(
+            <button key={l.to} onClick={()=>{navigate(l.to); setMobile(false);}} className="block w-full text-left py-2 text-sm font-medium">{l.label}</button>
+          ))}
+          <input
+            value={q} onChange={e=>setQ(e.target.value)}
+            onKeyDown={e=>{if(e.key==='Enter'){navigate("products",{search:q}); setMobile(false);}}}
+            placeholder="Search..." className="w-full border rounded-full px-4 py-2 text-sm"/>
+        </div>
+      )}
+    </header>
+  );
+}
+
+/* ---------------- FOOTER ---------------- */
+function Footer(){
+  return (
+    <footer className="bg-gray-900 text-gray-300 mt-16">
+      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div>
+          <h3 className="text-white font-bold text-lg mb-3">ShopWave</h3>
+          <p className="text-sm">Your one-stop online shop for quality products at unbeatable prices.</p>
+        </div>
+        <div><h4 className="text-white font-semibold mb-3">Shop</h4>
+          <ul className="space-y-2 text-sm">{CATEGORIES.map(c=><li key={c}>{c}</li>)}</ul>
+        </div>
+        <div><h4 className="text-white font-semibold mb-3">Help</h4>
+          <ul className="space-y-2 text-sm"><li>Contact</li><li>Shipping</li><li>Returns</li><li>FAQ</li></ul>
+        </div>
+        <div><h4 className="text-white font-semibold mb-3">Newsletter</h4>
+          <p className="text-sm mb-2">Get 10% off your first order.</p>
+          <div className="flex"><input className="flex-1 px-3 py-2 text-sm rounded-l text-gray-900" placeholder="Email"/><button className="bg-indigo-600 px-3 rounded-r text-sm">Join</button></div>
+        </div>
+      </div>
+      <div className="border-t border-gray-800 py-4 text-center text-xs">© 2026 ShopWave. All rights reserved.</div>
+    </footer>
+  );
+}
+
+/* ---------------- PRODUCT CARD ---------------- */
+function ProductCard({p}){
+  const {state, dispatch} = useApp();
+  const {navigate} = useRouter();
+  const toast = useToast();
+  const inWish = state.wishlist.includes(p.id);
+  const discount = Math.round((1 - p.price/p.originalPrice)*100);
+  return (
+    <div className="card-lift group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex flex-col h-full">
+      <div className="relative">
+        <button onClick={()=>navigate("product",{id:p.id})} className="block w-full">
+          <img src={p.image} alt={p.name} className="w-full h-48 object-cover group-hover:scale-110 transition duration-700"/>
+        </button>
+        {discount>0 && <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded pulse-badge">-{discount}%</span>}
+        {p.stock===0 && <span className="absolute top-2 right-2 bg-gray-700 text-white text-xs px-2 py-1 rounded">Out of stock</span>}
+        <button onClick={(e)=>{e.stopPropagation(); dispatch({type:"TOGGLE_WISH", id:p.id}); toast(inWish?"Removed from wishlist":"Added to wishlist","info");}}
+          className={`absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow flex items-center justify-center ${inWish?'text-pink-600':'text-gray-400'} hover:text-pink-600 z-10`}>
+          ♥
+        </button>
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="text-white font-bold text-lg">{fmt(p.price)}</div>
+          {p.originalPrice>p.price && <div className="text-xs text-gray-300 line-through">{fmt(p.originalPrice)}</div>}
+        </div>
+      </div>
+      <div className="p-4 flex-1 flex flex-col justify-between">
+        <div>
+          <div className="text-xs text-gray-500 uppercase tracking-wide">{p.category}</div>
+          <button onClick={()=>navigate("product",{id:p.id})} className="block text-left font-semibold text-gray-900 mt-1 line-clamp-2 hover:text-indigo-600">{p.name}</button>
+        </div>
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-1"><Stars value={p.rating}/>
+            <span className="text-xs text-gray-500">{p.reviewCount}</span></div>
+          <div className="font-bold text-indigo-600">{fmt(p.price)}</div>
+        </div>
+        <button
+          disabled={p.stock===0}
+          onClick={(e)=>{e.stopPropagation(); dispatch({type:"ADD_CART", product:p, qty:1}); toast("Added to cart");}}
+          className="shine mt-3 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-indigo-500/40 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition">
+          {p.stock===0?'Out of Stock':'Add to Cart'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- HOME PAGE ---------------- */
+function HomePage(){
+  const {navigate} = useRouter();
+  const featured = PRODUCTS.filter(p=>p.isFeatured).slice(0,4);
+  const [timeLeft, setTimeLeft] = useState({hours:24, minutes:0, seconds:0});
+  useEffect(()=>{
+    const timer = setInterval(()=>{
+      setTimeLeft(t=>{
+        if(t.seconds > 0) return {...t, seconds: t.seconds-1};
+        if(t.minutes > 0) return {...t, minutes: t.minutes-1, seconds: 59};
+        if(t.hours > 0) return {...t, hours: t.hours-1, minutes: 59, seconds: 59};
+        return t;
+      });
+    }, 1000);
+    return ()=>clearInterval(timer);
+  },[]);
+  return (
+    <div>
+      <section className="hero-bg text-white relative overflow-hidden">
+        <div className="blob bg-pink-400 w-72 h-72" style={{top:'-40px',left:'-40px'}}/>
+        <div className="blob bg-indigo-300 w-96 h-96" style={{bottom:'-80px',right:'-60px',animationDelay:'3s'}}/>
+        <div className="blob bg-amber-300 w-72 h-72" style={{top:'30%',left:'40%',animationDelay:'6s'}}/>
+        <div className="max-w-7xl mx-auto px-4 py-24 grid md:grid-cols-2 gap-10 items-center relative">
+          <div className="parallax-2">
+            <span className="fade-up inline-block px-3 py-1 text-xs font-semibold glass rounded-full border border-white/20">✨ New Season Drop</span>
+            <h1 className="fade-up d2 mt-4 text-5xl md:text-6xl font-black leading-[1.05] tracking-tight">Summer Sale<br/><span className="bg-gradient-to-r from-amber-200 to-pink-200 bg-clip-text text-transparent">up to 40% off</span></h1>
+            <p className="fade-up d3 mt-5 text-lg text-indigo-100 max-w-md">Curated products. Free shipping over $50. Handpicked deals refreshed daily.</p>
+            <div className="fade-up d3 mt-8 flex flex-wrap gap-3">
+              <button onClick={()=>navigate("products")} className="shine glow bg-white text-indigo-700 font-bold px-7 py-3.5 rounded-full hover:bg-indigo-50 transition">Shop Now →</button>
+              <button onClick={()=>navigate("products",{category:"Electronics"})} className="glass border-2 border-white/70 px-7 py-3.5 rounded-full font-semibold transition">Electronics</button>
+            </div>
+            <div className="fade-up d3 mt-10 flex gap-8 text-sm">
+              <div><div className="text-2xl font-black count-up">10k+</div><div className="text-indigo-200">Happy Buyers</div></div>
+              <div><div className="text-2xl font-black count-up">4.8★</div><div className="text-indigo-200">Avg Rating</div></div>
+              <div><div className="text-2xl font-black count-up">24/7</div><div className="text-indigo-200">Support</div></div>
+            </div>
+            <div className="mt-6 glass px-4 py-3 rounded-full inline-block">
+              <span className="text-xs font-medium">Sale ends in: </span>
+              <span className="font-bold text-amber-200">{timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span>
+            </div>
+          </div>
+          <div className="fade-up d2 relative">
+            <img src="/img7.jpeg" className="tilt rounded-3xl shadow-2xl ring-4 ring-white/20"/>
+            <div className="absolute -bottom-5 -left-5 bg-white text-gray-900 rounded-2xl shadow-xl px-4 py-3 flex items-center gap-2 animate-bounce">
+              <span className="text-2xl">🔥</span><div><div className="text-xs text-gray-500">Limited Drop</div><div className="font-bold text-sm">Ends in 24h</div></div>
+            </div>
+          </div>
+        </div>
+        {/* Marquee */}
+        <div className="border-t border-white/15 py-3 overflow-hidden">
+          <div className="marquee text-white/80 font-semibold tracking-wide text-sm">
+            {Array(2).fill(0).map((_,i)=>(<div key={i} className="flex gap-12">
+              <span>🚚 FREE SHIPPING OVER $50</span><span>•</span>
+              <span>↻ 30-DAY RETURNS</span><span>•</span>
+              <span>🔒 SECURE CHECKOUT</span><span>•</span>
+              <span>⚡ SAME-DAY DISPATCH</span><span>•</span>
+              <span>🎁 GIFT CARDS AVAILABLE</span><span>•</span>
+            </div>))}
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <h2 className="text-3xl font-black mb-2 floating">Shop by Category</h2>
+        <p className="text-gray-500 mb-8">Find exactly what you're looking for</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {CATEGORIES.map((c,i)=> {
+              const catImages = {
+                "Electronics": "/img13.jpeg",
+                "Clothing": "/img11.jpeg",
+                "Home & Kitchen": "/img12.jpeg",
+                "Sports": "/img7.jpeg",
+                "Books": "/img10.jpeg"
+              };
+              return (
+                <button key={c} onClick={()=>navigate("products",{category:c})} className="card-lift group relative rounded-2xl overflow-hidden h-40 shadow-md bg-white">
+                  <img src={catImages[c]} className="w-full h-full object-cover group-hover:scale-110 transition duration-700"/>
+                  <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/30 to-transparent flex items-end justify-center pb-4">
+                    <span className="text-white font-bold text-lg drop-shadow">{c}</span>
+                  </div>
+                </button>
+              );
+            })}
+        </div>
+      </section>
+
+<section className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h2 className="text-3xl font-black color-shift">Featured Products</h2>
+            <p className="text-gray-500 mt-1">Trending right now</p>
+          </div>
+          <button onClick={()=>navigate("products")} className="gradient-border px-4 py-2 rounded-full text-sm font-medium text-indigo-600 hover:text-white transition">View all →</button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featured.map(p=><ProductCard key={p.id} p={p}/>)}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="card-lift relative overflow-hidden bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 text-white rounded-3xl p-10 shimmer">
+            <div className="blob bg-yellow-200 w-48 h-48" style={{top:'-20px',right:'-20px',opacity:.4}}/>
+            <h3 className="text-3xl font-black relative star-sparkle">Free Shipping</h3>
+            <p className="mt-2 text-white/90 relative">On orders over $50. No code needed.</p>
+            <button onClick={()=>navigate("products")} className="shine mt-5 bg-white text-orange-600 px-5 py-2.5 rounded-full font-bold relative pulse-badge">Shop Now</button>
+          </div>
+          <div className="card-lift relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 text-white rounded-3xl p-10 shimmer">
+            <div className="blob bg-cyan-200 w-48 h-48" style={{bottom:'-20px',left:'-20px',opacity:.4}}/>
+            <h3 className="text-3xl font-black relative star-sparkle">Use code SAVE10</h3>
+            <p className="mt-2 text-white/90 relative">Get an extra 10% off your cart at checkout.</p>
+            <button onClick={()=>navigate("products")} className="shine mt-5 bg-white text-emerald-700 px-5 py-2.5 rounded-full font-bold relative pulse-badge">Browse</button>
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 py-12 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl">
+        <div className="text-center py-8">
+          <h2 className="text-3xl font-black color-shift mb-4">Why Choose ShopWave?</h2>
+          <div className="grid md:grid-cols-3 gap-8 mt-8">
+            <div className="glass p-6 rounded-2xl hover-grow">
+              <div className="text-4xl mb-3">🚚</div>
+              <h3 className="font-bold text-lg mb-2">Fast Delivery</h3>
+              <p className="text-sm text-gray-600">Same-day dispatch on orders over $50</p>
+            </div>
+            <div className="glass p-6 rounded-2xl hover-grow">
+              <div className="text-4xl mb-3">🛡️</div>
+              <h3 className="font-bold text-lg mb-2">Secure Payment</h3>
+              <p className="text-sm text-gray-600">256-bit SSL encryption guaranteed</p>
+            </div>
+            <div className="glass p-6 rounded-2xl hover-grow">
+              <div className="text-4xl mb-3">💎</div>
+              <h3 className="font-bold text-lg mb-2">Premium Quality</h3>
+              <p className="text-sm text-gray-600">Handpicked products with 4.8★ avg rating</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ---------------- PRODUCTS PAGE ---------------- */
+function ProductsPage(){
+  const {route} = useRouter();
+  const initialCat = route.params.category ? [route.params.category] : [];
+  const initialSearch = route.params.search || "";
+  const [cats,setCats] = useState(initialCat);
+  const [maxPrice,setMaxPrice] = useState(800);
+  const [minRating,setMinRating] = useState(0);
+  const [sort,setSort] = useState("featured");
+  const [search,setSearch] = useState(initialSearch);
+  const [page,setPage] = useState(1);
+  const [loading,setLoading] = useState(true);
+  const [showFilters,setShowFilters] = useState(false);
+
+  useEffect(()=>{ const t = setTimeout(()=>setLoading(false), 800); return ()=>clearTimeout(t); },[]);
+  useEffect(()=>setCats(route.params.category ? [route.params.category] : []), [route.params.category]);
+  useEffect(()=>setSearch(route.params.search || ""), [route.params.search]);
+  useEffect(()=>setPage(1), [cats, maxPrice, minRating, sort, search]);
+
+  const filtered = useMemo(()=>{
+    let list = PRODUCTS.filter(p =>
+      (cats.length===0 || cats.includes(p.category)) &&
+      p.price <= maxPrice &&
+      p.rating >= minRating &&
+      (!search || p.name.toLowerCase().includes(search.toLowerCase()))
+    );
+    if(sort==="priceAsc") list.sort((a,b)=>a.price-b.price);
+    else if(sort==="priceDesc") list.sort((a,b)=>b.price-a.price);
+    else if(sort==="rating") list.sort((a,b)=>b.rating-a.rating);
+    else if(sort==="name") list.sort((a,b)=>a.name.localeCompare(b.name));
+    return list;
+  },[cats, maxPrice, minRating, sort, search]);
+
+  const perPage = 8;
+  const totalPages = Math.max(1, Math.ceil(filtered.length/perPage));
+  const pageItems = filtered.slice((page-1)*perPage, page*perPage);
+
+  const toggleCat = (c)=>setCats(prev=>prev.includes(c)?[]:[c]);
+
+  const Sidebar = () => (
+    <aside className="bg-white rounded-xl shadow-sm border p-5 space-y-6">
+      <div>
+        <h3 className="font-semibold mb-3">Category</h3>
+        <div className="space-y-2">
+          {CATEGORIES.map(c=>(
+            <label key={c} className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={cats.includes(c)} onChange={()=>toggleCat(c)} className="accent-indigo-600"/>
+              {c}
+            </label>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3">Max Price: {fmt(maxPrice)}</h3>
+        <input type="range" min="10" max="800" value={maxPrice} onChange={e=>setMaxPrice(+e.target.value)} className="w-full"/>
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3">Min Rating</h3>
+        <div className="flex gap-1">
+          {[0,1,2,3,4].map(r=>(
+            <button key={r} onClick={()=>setMinRating(r)} className={`px-2 py-1 text-xs rounded border ${minRating===r?'bg-indigo-600 text-white border-indigo-600':'border-gray-300'}`}>{r===0?'All':`${r}+`}</button>
+          ))}
+        </div>
+      </div>
+      <button onClick={()=>{setCats([]);setMaxPrice(800);setMinRating(0);setSearch("");}} className="w-full text-sm text-indigo-600 hover:underline">Clear all</button>
+    </aside>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="md:w-64 md:block">
+          <div className="md:hidden mb-2">
+            <button onClick={()=>setShowFilters(s=>!s)} className="w-full bg-white border rounded-lg py-2 text-sm font-medium">
+              {showFilters?'Hide':'Show'} Filters
+            </button>
+          </div>
+          <div className={showFilters?'block':'hidden md:block'}><Sidebar/></div>
+        </div>
+        <div className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold">{cats.length > 0 ? `${cats.join(", ")} Products` : "All Products"}</h1>
+              <p className="text-sm text-gray-500">{filtered.length} results</p>
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search in results..." className="border rounded-lg px-3 py-2 text-sm flex-1 sm:flex-none sm:w-56"/>
+              <select value={sort} onChange={e=>setSort(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
+                <option value="featured">Featured</option>
+                <option value="priceAsc">Price: Low to High</option>
+                <option value="priceDesc">Price: High to Low</option>
+                <option value="rating">Top Rated</option>
+                <option value="name">Name (A-Z)</option>
+              </select>
+            </div>
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1,2,3,4].map(i=>(
+                <div key={i} className="bg-white rounded-xl border p-4">
+                  <div className="skeleton h-48 rounded mb-3"/>
+                  <div className="skeleton h-4 w-3/4 mb-2"/>
+                  <div className="skeleton h-4 w-1/2"/>
+                </div>
+              ))}
+            </div>
+          ) : pageItems.length===0 ? (
+            <div className="bg-white rounded-xl p-12 text-center border">
+              <div className="text-5xl mb-3">🔍</div>
+              <p className="text-gray-600">No products match your filters.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {pageItems.map(p=><ProductCard key={p.id} p={p}/>)}
+              </div>
+              {totalPages>1 && (
+                <div className="flex justify-center gap-2 mt-8">
+                  <button disabled={page===1} onClick={()=>setPage(p=>p-1)} className="px-3 py-2 border rounded disabled:opacity-40">Prev</button>
+                  {Array.from({length:totalPages}).map((_,i)=>(
+                    <button key={i} onClick={()=>setPage(i+1)} className={`px-3 py-2 rounded ${page===i+1?'bg-indigo-600 text-white':'border'}`}>{i+1}</button>
+                  ))}
+                  <button disabled={page===totalPages} onClick={()=>setPage(p=>p+1)} className="px-3 py-2 border rounded disabled:opacity-40">Next</button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- PRODUCT DETAIL ---------------- */
+const GALLERY_IMAGES = {
+  1: ["/img1.jpeg","/img1.jpeg","/img2.jpeg","/img3.jpeg"],
+  2: ["/img2.jpeg","/img2.jpeg","/img4.jpeg","/img5.jpeg"],
+  3: ["/img3.jpeg","/img3.jpeg","/img6.jpeg","/img7.jpeg"],
+  4: ["/img4.jpeg","/img4.jpeg","/img8.jpeg","/img9.jpeg"],
+  5: ["/img5.jpeg","/img5.jpeg","/img10.jpeg","/img11.jpeg"],
+  6: ["/img6.jpeg","/img6.jpeg","/img12.jpeg","/img13.jpeg"],
+  7: ["/img7.jpeg","/img7.jpeg","/img1.jpeg","/img2.jpeg"],
+  8: ["/img8.jpeg","/img8.jpeg","/img3.jpeg","/img4.jpeg"],
+  9: ["/img9.jpeg","/img9.jpeg","/img5.jpeg","/img6.jpeg"],
+  10: ["/img10.jpeg","/img10.jpeg","/img7.jpeg","/img8.jpeg"],
+  11: ["/img11.jpeg","/img11.jpeg","/img9.jpeg","/img10.jpeg"],
+  12: ["/img12.jpeg","/img12.jpeg","/img1.jpeg","/img2.jpeg"],
+  13: ["/img13.jpeg","/img13.jpeg","/img3.jpeg","/img4.jpeg"],
+  14: ["/img1.jpeg","/img1.jpeg","/img5.jpeg","/img6.jpeg"]
+};
+function ProductDetail(){
+  const {route, navigate} = useRouter();
+  const {state, dispatch} = useApp();
+  const toast = useToast();
+  const product = PRODUCTS.find(p=>p.id===route.params.id) || PRODUCTS[0];
+  const [qty,setQty] = useState(1);
+  const [activeImg,setActiveImg] = useState(0);
+  const images = GALLERY_IMAGES[product.id] || [product.image];
+  const inWish = state.wishlist.includes(product.id);
+  const discount = Math.round((1 - product.price/product.originalPrice)*100);
+  const related = PRODUCTS.filter(p=>p.category===product.category && p.id!==product.id).slice(0,3);
+
+  useEffect(()=>{setActiveImg(0); setQty(1);},[product.id]);
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <button onClick={()=>navigate("products")} className="text-sm text-indigo-600 hover:underline mb-4">← Back to products</button>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
+          <img src={images[activeImg]} className="w-full rounded-2xl shadow"/>
+          <div className="grid grid-cols-4 gap-2 mt-3">
+            {images.map((img,i)=>(
+              <button key={i} onClick={()=>setActiveImg(i)} className={`rounded-lg overflow-hidden border-2 ${activeImg===i?'border-indigo-600':'border-transparent'}`}>
+                <img src={img} className="w-full h-20 object-cover"/>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="text-sm text-indigo-600 font-medium">{product.category}</div>
+          <h1 className="text-3xl font-bold mt-1">{product.name}</h1>
+          <div className="flex items-center gap-2 mt-2">
+            <Stars value={product.rating}/>
+            <span className="text-sm text-gray-600">{product.rating} • {product.reviewCount} reviews</span>
+          </div>
+          <div className="flex items-baseline gap-3 mt-4">
+            <span className="text-3xl font-bold">{fmt(product.price)}</span>
+            {product.originalPrice>product.price && <span className="text-lg text-gray-400 line-through">{fmt(product.originalPrice)}</span>}
+            {discount>0 && <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-sm font-semibold">-{discount}%</span>}
+          </div>
+          <div className="mt-3">
+            {product.stock>0 ? <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-medium">In stock ({product.stock})</span> : <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">Out of stock</span>}
+          </div>
+          <p className="mt-4 text-gray-700">{product.description}</p>
+          <div className="flex gap-2 mt-3">
+            {product.tags.map(t=><span key={t} className="bg-gray-100 px-2 py-1 rounded text-xs">#{t}</span>)}
+          </div>
+          <div className="flex items-center gap-3 mt-6">
+            <div className="flex items-center border rounded-lg">
+              <button onClick={()=>setQty(q=>Math.max(1,q-1))} className="px-3 py-2 text-lg">−</button>
+              <span className="px-4 font-medium">{qty}</span>
+              <button onClick={()=>setQty(q=>Math.min(product.stock||1,q+1))} className="px-3 py-2 text-lg">+</button>
+            </div>
+            <button
+              disabled={product.stock===0}
+              onClick={()=>{dispatch({type:"ADD_CART", product, qty}); toast("Added to cart");}}
+              className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-300">
+              Add to Cart
+            </button>
+            <button onClick={()=>{dispatch({type:"TOGGLE_WISH", id:product.id}); toast(inWish?"Removed from wishlist":"Added to wishlist","info");}}
+              className={`w-12 h-12 border rounded-lg text-xl ${inWish?'text-pink-600 border-pink-600':''}`}>♥</button>
+          </div>
+        </div>
+      </div>
+
+      <section className="mt-12">
+        <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
+        <div className="space-y-4">
+          {FAKE_REVIEWS.map((r,i)=>(
+            <div key={i} className="bg-white rounded-xl border p-4">
+              <div className="flex justify-between">
+                <div>
+                  <div className="font-semibold">{r.name}</div>
+                  <Stars value={r.rating}/>
+                </div>
+                <div className="text-xs text-gray-500">{r.date}</div>
+              </div>
+              <p className="mt-2 text-gray-700 text-sm">{r.comment}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {related.length>0 && (
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Related Products</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {related.map(p=><ProductCard key={p.id} p={p}/>)}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- CART ---------------- */
+function calcTotals(cart, promo){
+  const items = cart.map(c=>({...c, product: PRODUCTS.find(p=>p.id===c.id)})).filter(c=>c.product);
+  const subtotal = items.reduce((s,i)=>s+i.product.price*i.qty,0);
+  let shipping = subtotal>=50 || subtotal===0 ? 0 : 5.99;
+  let discount = 0;
+  if(promo==="SAVE10") discount = subtotal*0.1;
+  if(promo==="FREESHIP") shipping = 0;
+  const taxBase = Math.max(0, subtotal-discount);
+  const tax = taxBase*0.08;
+  const total = taxBase + tax + shipping;
+  return {items, subtotal, shipping, discount, tax, total};
+}
+
+function CartPage(){
+  const {state, dispatch} = useApp();
+  const {navigate} = useRouter();
+  const toast = useToast();
+  const [promo,setPromo] = useState("");
+  const [appliedPromo,setAppliedPromo] = useState("");
+  const [promoErr,setPromoErr] = useState("");
+  const totals = calcTotals(state.cart, appliedPromo);
+
+  if(totals.items.length===0){
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <div className="text-6xl mb-4">🛒</div>
+        <h1 className="text-2xl font-bold">Your cart is empty</h1>
+        <p className="text-gray-600 mt-2">Looks like you haven't added anything yet.</p>
+        <button onClick={()=>navigate("products")} className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-full">Browse Products</button>
+      </div>
+    );
+  }
+
+  const applyPromo = ()=>{
+    const code = promo.trim().toUpperCase();
+    if(code==="SAVE10" || code==="FREESHIP"){ setAppliedPromo(code); setPromoErr(""); toast(`Promo ${code} applied`); }
+    else { setPromoErr("Invalid promo code"); setAppliedPromo(""); }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-3">
+        <h1 className="text-2xl font-bold mb-2">Shopping Cart</h1>
+        {totals.items.map(i=>(
+          <div key={i.id} className="bg-white border rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center">
+            <img src={i.product.image} className="w-24 h-24 object-cover rounded-lg"/>
+            <div className="flex-1 w-full">
+              <div className="font-semibold">{i.product.name}</div>
+              <div className="text-sm text-gray-500">{i.product.category}</div>
+              <div className="text-indigo-600 font-bold mt-1">{fmt(i.product.price)}</div>
+            </div>
+            <div className="flex items-center border rounded-lg">
+              <button onClick={()=>dispatch({type:"UPDATE_QTY", id:i.id, qty:Math.max(1,i.qty-1)})} className="px-3 py-1">−</button>
+              <span className="px-3">{i.qty}</span>
+              <button onClick={()=>dispatch({type:"UPDATE_QTY", id:i.id, qty:Math.min(i.product.stock,i.qty+1)})} className="px-3 py-1">+</button>
+            </div>
+            <div className="font-bold w-20 text-right">{fmt(i.product.price*i.qty)}</div>
+            <button onClick={()=>{dispatch({type:"REMOVE_CART", id:i.id}); toast("Removed from cart","info");}} className="text-red-500 hover:text-red-700">✕</button>
+          </div>
+        ))}
+        <button onClick={()=>dispatch({type:"CLEAR_CART"})} className="text-sm text-gray-500 hover:text-red-600">Clear cart</button>
+      </div>
+      <div className="bg-white border rounded-xl p-6 h-fit sticky top-24">
+        <h2 className="font-bold text-lg mb-4">Order Summary</h2>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between"><span>Subtotal</span><span>{fmt(totals.subtotal)}</span></div>
+          {totals.discount>0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-{fmt(totals.discount)}</span></div>}
+          <div className="flex justify-between"><span>Shipping</span><span>{totals.shipping===0?'Free':fmt(totals.shipping)}</span></div>
+          <div className="flex justify-between"><span>Tax (8%)</span><span>{fmt(totals.tax)}</span></div>
+          <div className="border-t pt-2 flex justify-between font-bold text-base"><span>Total</span><span>{fmt(totals.total)}</span></div>
+        </div>
+        <div className="mt-4">
+          <div className="flex gap-2">
+            <input value={promo} onChange={e=>setPromo(e.target.value)} placeholder="Promo code" className="flex-1 border rounded px-3 py-2 text-sm"/>
+            <button onClick={applyPromo} className="bg-gray-900 text-white px-3 rounded text-sm">Apply</button>
+          </div>
+          {promoErr && <p className="text-xs text-red-600 mt-1">{promoErr}</p>}
+          {appliedPromo && <p className="text-xs text-emerald-600 mt-1">Applied: {appliedPromo}</p>}
+          <p className="text-xs text-gray-500 mt-1">Try SAVE10 or FREESHIP</p>
+        </div>
+        <button onClick={()=>navigate("checkout")} className="mt-4 w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700">Proceed to Checkout</button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- CHECKOUT ---------------- */
+function CheckoutPage(){
+  const {state, dispatch} = useApp();
+  const {navigate} = useRouter();
+  const [step,setStep] = useState(1);
+  const [ship,setShip] = useState({name:"",email:"",phone:"",address:"",city:"",state:"",zip:"",country:"United States"});
+  const [pay,setPay] = useState({card:"",exp:"",cvv:"",holder:""});
+  const [errors,setErrors] = useState({});
+  const totals = calcTotals(state.cart, "");
+
+  useEffect(()=>{ if(state.cart.length===0) navigate("cart"); },[]);
+
+  const cardType = (()=> {
+    const n = pay.card.replace(/\s/g,"");
+    if(/^4/.test(n)) return "Visa";
+    if(/^5[1-5]/.test(n)) return "Mastercard";
+    return "";
+  })();
+
+  const validate1 = ()=>{
+    const e = {};
+    if(!ship.name.trim()) e.name = "Required";
+    if(!/^\S+@\S+\.\S+$/.test(ship.email)) e.email = "Valid email required";
+    if(!/^[\d\s\-+()]{7,}$/.test(ship.phone)) e.phone = "Valid phone required";
+    if(!ship.address.trim()) e.address = "Required";
+    if(!ship.city.trim()) e.city = "Required";
+    if(!ship.state.trim()) e.state = "Required";
+    if(!/^\d{4,10}$/.test(ship.zip)) e.zip = "Valid ZIP required";
+    setErrors(e); return Object.keys(e).length===0;
+  };
+  const validate2 = ()=>{
+    const e = {};
+    const cardDigits = pay.card.replace(/\s/g,"");
+    if(!/^\d{16}$/.test(cardDigits)) e.card = "16-digit card required";
+    if(!/^\d{2}\/\d{2}$/.test(pay.exp)) e.exp = "MM/YY";
+    if(!/^\d{3,4}$/.test(pay.cvv)) e.cvv = "3-4 digits";
+    if(!pay.holder.trim()) e.holder = "Required";
+    setErrors(e); return Object.keys(e).length===0;
+  };
+
+  const next = ()=>{
+    if(step===1 && validate1()) setStep(2);
+    else if(step===2 && validate2()) setStep(3);
+  };
+
+  const submit = ()=>{
+    dispatch({type:"CLEAR_CART"});
+    navigate("order-success");
+  };
+
+  const formatCard = v => v.replace(/\D/g,"").slice(0,16).replace(/(\d{4})(?=\d)/g,"$1 ");
+  const formatExp = v => { const x = v.replace(/\D/g,"").slice(0,4); return x.length>2?`${x.slice(0,2)}/${x.slice(2)}`:x; };
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        {["Shipping","Payment","Review"].map((s,i)=>(
+          <div key={s} className="flex-1 flex items-center">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold ${step>i?'bg-indigo-600 text-white':'bg-gray-200 text-gray-600'}`}>{i+1}</div>
+            <div className={`ml-2 text-sm font-medium ${step>i?'text-indigo-600':'text-gray-500'}`}>{s}</div>
+            {i<2 && <div className={`flex-1 h-1 mx-3 ${step>i+1?'bg-indigo-600':'bg-gray-200'}`}/>}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white border rounded-xl p-6">
+          {step===1 && (
+            <div className="space-y-3">
+              <h2 className="text-xl font-bold mb-2">Shipping Information</h2>
+              {[
+                ["name","Full Name"],["email","Email"],["phone","Phone"],["address","Address"],
+              ].map(([k,l])=>(
+                <div key={k}>
+                  <label className="text-sm font-medium">{l}</label>
+                  <input value={ship[k]} onChange={e=>setShip({...ship,[k]:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1"/>
+                  {errors[k] && <p className="text-xs text-red-600">{errors[k]}</p>}
+                </div>
+              ))}
+              <div className="grid grid-cols-3 gap-3">
+                {[["city","City"],["state","State"],["zip","ZIP"]].map(([k,l])=>(
+                  <div key={k}>
+                    <label className="text-sm font-medium">{l}</label>
+                    <input value={ship[k]} onChange={e=>setShip({...ship,[k]:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1"/>
+                    {errors[k] && <p className="text-xs text-red-600">{errors[k]}</p>}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="text-sm font-medium">Country</label>
+                <select value={ship.country} onChange={e=>setShip({...ship,country:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1">
+                  {["United States","Canada","United Kingdom","Germany","France","Australia","India"].map(c=><option key={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+          {step===2 && (
+            <div className="space-y-3">
+              <h2 className="text-xl font-bold mb-2">Payment Details</h2>
+              <div>
+                <label className="text-sm font-medium">Card Number</label>
+                <div className="relative">
+                  <input value={pay.card} onChange={e=>setPay({...pay,card:formatCard(e.target.value)})} placeholder="1234 5678 9012 3456" className="w-full border rounded-lg px-3 py-2 mt-1 pr-20"/>
+                  {cardType && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold bg-gray-900 text-white px-2 py-1 rounded">{cardType}</span>}
+                </div>
+                {errors.card && <p className="text-xs text-red-600">{errors.card}</p>}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium">Expiry (MM/YY)</label>
+                  <input value={pay.exp} onChange={e=>setPay({...pay,exp:formatExp(e.target.value)})} placeholder="12/27" className="w-full border rounded-lg px-3 py-2 mt-1"/>
+                  {errors.exp && <p className="text-xs text-red-600">{errors.exp}</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">CVV</label>
+                  <input value={pay.cvv} onChange={e=>setPay({...pay,cvv:e.target.value.replace(/\D/g,"").slice(0,4)})} placeholder="123" className="w-full border rounded-lg px-3 py-2 mt-1"/>
+                  {errors.cvv && <p className="text-xs text-red-600">{errors.cvv}</p>}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Cardholder Name</label>
+                <input value={pay.holder} onChange={e=>setPay({...pay,holder:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1"/>
+                {errors.holder && <p className="text-xs text-red-600">{errors.holder}</p>}
+              </div>
+            </div>
+          )}
+          {step===3 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold mb-2">Review Your Order</h2>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">Shipping to</h3>
+                <p className="text-sm">{ship.name}<br/>{ship.address}, {ship.city}, {ship.state} {ship.zip}<br/>{ship.country}<br/>{ship.email} • {ship.phone}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">Payment</h3>
+                <p className="text-sm">{cardType||'Card'} ending in {pay.card.slice(-4)}<br/>{pay.holder}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">Items</h3>
+                {totals.items.map(i=>(
+                  <div key={i.id} className="flex justify-between text-sm py-1">
+                    <span>{i.product.name} × {i.qty}</span>
+                    <span>{fmt(i.product.price*i.qty)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-between mt-6">
+            <button onClick={()=>step===1?navigate("cart"):setStep(s=>s-1)} className="px-4 py-2 border rounded-lg">← Back</button>
+            {step<3 ? (
+              <button onClick={next} className="bg-indigo-600 text-white px-6 py-2 rounded-lg">Continue</button>
+            ) : (
+              <button onClick={submit} className="bg-emerald-600 text-white px-6 py-2 rounded-lg">Place Order</button>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white border rounded-xl p-6 h-fit">
+          <h3 className="font-bold mb-3">Summary</h3>
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between"><span>Subtotal</span><span>{fmt(totals.subtotal)}</span></div>
+            <div className="flex justify-between"><span>Shipping</span><span>{totals.shipping===0?'Free':fmt(totals.shipping)}</span></div>
+            <div className="flex justify-between"><span>Tax</span><span>{fmt(totals.tax)}</span></div>
+            <div className="border-t pt-2 flex justify-between font-bold"><span>Total</span><span>{fmt(totals.total)}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- AUTH ---------------- */
+function AuthPage(){
+  const {dispatch} = useApp();
+  const {navigate} = useRouter();
+  const toast = useToast();
+  const [mode,setMode] = useState("login");
+  const [form,setForm] = useState({name:"",email:"",password:"",confirm:""});
+  const [errors,setErrors] = useState({});
+
+  const submit = ()=>{
+    const e = {};
+    if(mode==="register" && !form.name.trim()) e.name = "Required";
+    if(!/^\S+@\S+\.\S+$/.test(form.email)) e.email = "Valid email required";
+    if(form.password.length<6) e.password = "Min 6 characters";
+    if(mode==="register" && form.password!==form.confirm) e.confirm = "Passwords don't match";
+    setErrors(e);
+    if(Object.keys(e).length===0){
+      const user = {name: form.name || form.email.split("@")[0], email: form.email};
+      dispatch({type:"LOGIN", user});
+      toast(mode==="login"?"Welcome back!":"Account created!");
+      navigate("home");
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto px-4 py-12">
+      <div className="bg-white border rounded-2xl p-8 shadow-sm">
+        <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+          <button onClick={()=>setMode("login")} className={`flex-1 py-2 rounded ${mode==="login"?'bg-white shadow font-semibold':''}`}>Login</button>
+          <button onClick={()=>setMode("register")} className={`flex-1 py-2 rounded ${mode==="register"?'bg-white shadow font-semibold':''}`}>Register</button>
+        </div>
+        <div className="space-y-3">
+          {mode==="register" && (
+            <div>
+              <label className="text-sm font-medium">Name</label>
+              <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1"/>
+              {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+            </div>
+          )}
+          <div>
+            <label className="text-sm font-medium">Email</label>
+            <input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1"/>
+            {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
+          </div>
+          <div>
+            <label className="text-sm font-medium">Password</label>
+            <input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1"/>
+            {errors.password && <p className="text-xs text-red-600">{errors.password}</p>}
+          </div>
+          {mode==="register" && (
+            <div>
+              <label className="text-sm font-medium">Confirm Password</label>
+              <input type="password" value={form.confirm} onChange={e=>setForm({...form,confirm:e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1"/>
+              {errors.confirm && <p className="text-xs text-red-600">{errors.confirm}</p>}
+            </div>
+          )}
+          <button onClick={submit} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700">
+            {mode==="login"?"Sign In":"Create Account"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- ORDER SUCCESS ---------------- */
+function OrderSuccess(){
+  const {navigate} = useRouter();
+  const orderId = useMemo(()=>"#"+Math.floor(100000+Math.random()*900000), []);
+  return (
+    <div className="max-w-xl mx-auto px-4 py-20 text-center">
+      <div className="text-6xl mb-4">🎉</div>
+      <h1 className="text-3xl font-bold">Thank you for your order!</h1>
+      <p className="text-gray-600 mt-2">Your order {orderId} has been placed successfully. A confirmation email is on its way.</p>
+      <button onClick={()=>navigate("products")} className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-full">Continue Shopping</button>
+    </div>
+  );
+}
+
+/* ---------------- WISHLIST DRAWER ---------------- */
+function WishlistDrawer({open, onClose}){
+  const {state, dispatch} = useApp();
+  const {navigate} = useRouter();
+  const toast = useToast();
+  if(!open) return null;
+  const items = state.wishlist.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean);
+  return (
+    <div className="fixed inset-0 z-[60]">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose}/>
+      <div className="drawer-in absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="font-bold text-lg">Wishlist ({items.length})</h2>
+          <button onClick={onClose} className="text-2xl">×</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {items.length===0 ? (
+            <p className="text-center text-gray-500 mt-12">No items in wishlist</p>
+          ) : items.map(p=>(
+            <div key={p.id} className="flex gap-3 items-center border rounded-lg p-2">
+              <img src={p.image} className="w-16 h-16 object-cover rounded"/>
+              <div className="flex-1">
+                <button onClick={()=>{navigate("product",{id:p.id}); onClose();}} className="text-left text-sm font-medium hover:text-indigo-600">{p.name}</button>
+                <div className="text-indigo-600 font-bold text-sm">{fmt(p.price)}</div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <button onClick={()=>{dispatch({type:"ADD_CART",product:p,qty:1}); toast("Added to cart");}} className="text-xs bg-indigo-600 text-white px-2 py-1 rounded">Add</button>
+                <button onClick={()=>dispatch({type:"TOGGLE_WISH",id:p.id})} className="text-xs text-red-500">Remove</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- APP ---------------- */
+function Shell(){
+  const {route} = useRouter();
+  const [wishOpen,setWishOpen] = useState(false);
+  const [newsletterOpen,setNewsletterOpen] = useState(false);
+  useEffect(()=>{
+    const timer = setTimeout(()=>setNewsletterOpen(true), 5000);
+    return ()=>clearTimeout(timer);
+  },[]);
+  let page;
+  switch(route.name){
+    case "products": page = <ProductsPage/>; break;
+    case "product": page = <ProductDetail/>; break;
+    case "cart": page = <CartPage/>; break;
+    case "checkout": page = <CheckoutPage/>; break;
+    case "auth": page = <AuthPage/>; break;
+    case "order-success": page = <OrderSuccess/>; break;
+    default: page = <HomePage/>;
+  }
+  const NewsletterPopup = ()=>{
+    const [email,setEmail] = useState("");
+    if(!newsletterOpen) return null;
+    return (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50">
+        <div className="glass bg-white/90 rounded-3xl p-8 max-w-md mx-4 relative">
+          <button onClick={()=>setNewsletterOpen(false)} className="absolute top-4 right-4 text-xl">×</button>
+          <div className="text-center">
+            <div className="text-4xl mb-3">🎁</div>
+            <h3 className="text-2xl font-bold mb-2">Get 10% Off!</h3>
+            <p className="text-gray-600 mb-4">Subscribe to our newsletter for exclusive deals</p>
+            <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Enter your email" className="w-full border rounded-full px-4 py-3 text-center mb-3"/>
+            <button onClick={()=>{setNewsletterOpen(false);}} className="w-full bg-indigo-600 text-white py-3 rounded-full font-medium">Subscribe</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header onOpenWishlist={()=>setWishOpen(true)}/>
+      <main className="flex-1">{page}</main>
+      <Footer/>
+      <WishlistDrawer open={wishOpen} onClose={()=>setWishOpen(false)}/>
+      <NewsletterPopup/>
+    </div>
+  );
+}
+
+function App(){
+  return (
+    <ToastProvider>
+      <AppProvider>
+        <RouterProvider>
+          <Shell/>
+        </RouterProvider>
+      </AppProvider>
+    </ToastProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
