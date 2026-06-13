@@ -260,6 +260,23 @@ Reviewers will run the CI pipeline; once all checks pass and approvals are recei
 
 If an issue persists, search the repo with `grep` or open an issue.
 
+## 16. Screenshots
+
+### 16.1 Home Page
+![Screenshot (801)](screenshots/Screenshot%20(801).png)
+
+### 16.2 Product Listing
+![Screenshot (802)](screenshots/Screenshot%20(802).png)
+
+### 16.3 Product Detail
+![Screenshot (803)](screenshots/Screenshot%20(803).png)
+
+### 16.4 Cart Page
+![Screenshot (804)](screenshots/Screenshot%20(804).png)
+
+### 16.5 Checkout Page
+![Screenshot (805)](screenshots/Screenshot%20(805).png)
+
 ## 16. License
 This project is licensed under the **MIT License**. See the `LICENSE` file for full terms.
 
